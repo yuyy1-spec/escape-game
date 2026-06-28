@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>東京病院 ─ 廃墟からの脱出</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #2a2a3a;
+    --text: #c8c8d8;
+    --text-dim: #6a6a80;
+    --accent: #8b1a1a;
+    --accent2: #a82020;
+    --accent-glow: rgba(139,26,26,0.3);
+    --gold: #b8956a;
+    --white: #e8e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  #game {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ── TITLE SCREEN ── */
+  #title-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    background: linear-gradient(180deg, #0a0a0f 0%, #12080a 100%);
+  }
+
+  .title-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .title-main {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.15em;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .title-sub {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent2);
+    margin-bottom: 48px;
+  }
+
+  .title-divider {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(180deg, transparent, var(--accent), transparent);
+    margin: 0 auto 48px;
+  }
+
+  .name-section {
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .name-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  .name-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 16px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-input:focus {
+    border-color: var(--accent);
+  }
+
+  .name-input::placeholder {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .start-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
+  }
+
+  .start-btn:active {
+    background: var(--accent2);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .warning-text {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 32px;
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── MAIN GAME SCREEN ── */
+  #game-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    display: none;
+  }
+
+  .location-bar {
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .location-name {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+  }
+
+  .mistake-counter {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .scene-area {
+    flex: 1;
+    padding: 24px 20px;
+    overflow-y: auto;
+  }
+
+  .scene-text {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text);
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+
+  .partner-speech {
+    background: var(--surface2);
+    border-left: 2px solid var(--gold);
+    padding: 14px 16px;
+    margin: 16px 0;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .partner-name {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 6px;
+  }
+
+  .partner-text {
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* ── CHOICES ── */
+  .choices {
+    padding: 0 20px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .choice-btn {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+
+  .choice-btn:active {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--white);
+  }
+
+  .choice-btn::before {
+    content: '▶ ';
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  /* ── PUZZLE AREA ── */
+  .puzzle-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+
+  .puzzle-title {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .clue-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+
+  .clue-item.revealed {
+    border-color: var(--gold);
+    color: var(--white);
+  }
+
+  .clue-item:not(.revealed) {
+    color: var(--text-dim);
+  }
+
+  .clue-item .tap-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── CODE INPUT ── */
+  .code-input-area {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .code-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .code-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .code-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 20px;
+    padding: 12px 16px;
+    letter-spacing: 0.3em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .code-input:focus {
+    border-color: var(--accent);
+  }
+
+  .code-submit {
+    padding: 12px 20px;
+    background: var(--accent);
+    border: none;
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .code-submit:active {
+    background: var(--accent2);
+  }
+
+  .hint-box {
+    background: rgba(139,26,26,0.08);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 12px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--accent2);
+    line-height: 1.8;
+    display: none;
+  }
+
+  .hint-box.visible {
+    display: block;
+  }
+
+  /* ── SORT UI (謎④) ── */
+  .sort-area {
+    margin: 16px 0;
+  }
+
+  .sort-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .sort-chars {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .sort-char {
+    width: 52px;
+    height: 52px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 20px;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .sort-char .char-num {
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    font-size: 9px;
+    color: var(--accent2);
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .sort-char.selected {
+    border-color: var(--accent2);
+    background: rgba(139,26,26,0.15);
+  }
+
+  .sort-result {
+    display: flex;
+    gap: 8px;
+    min-height: 52px;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+    padding: 8px;
+    align-items: center;
+  }
+
+  .sort-slot {
+    width: 52px;
+    height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 18px;
+    color: var(--white);
+  }
+
+  .sort-clear {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* ── GAME OVER ── */
+  #gameover-screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    background: linear-gradient(180deg, #0a0a0f 0%, #150505 100%);
+  }
+
+  .go-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 24px;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+
+  .go-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 2;
+    margin-bottom: 40px;
+  }
+
+  .go-btn {
+    padding: 14px 40px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    color: var(--accent2);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+  }
+
+  /* ── ENDING ── */
+  #ending-screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    padding: 0;
+    background: #0a0a0f;
+  }
+
+  .ending-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 24px;
+  }
+
+  .ending-text {
+    font-size: 14px;
+    line-height: 2.2;
+    color: var(--text);
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+
+  .ending-speech {
+    background: var(--surface2);
+    border-left: 2px solid var(--gold);
+    padding: 14px 16px;
+    margin: 20px 0;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .ending-speech .partner-text {
+    color: var(--gold);
+  }
+
+  .ending-record {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin: 24px 0;
+    border-radius: 2px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 2;
+  }
+
+  .ending-record .red {
+    color: var(--accent2);
+    font-weight: 700;
+  }
+
+  .ending-final {
+    text-align: center;
+    padding: 40px 0 60px;
+  }
+
+  .ending-final-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    color: var(--white);
+    line-height: 2.4;
+    margin-bottom: 32px;
+    white-space: pre-wrap;
+  }
+
+  .ending-title-card {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    margin-top: 48px;
+  }
+
+  .replay-btn {
+    padding: 14px 40px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    margin-top: 40px;
+  }
+
+  /* ── FADE TRANSITION ── */
+  .fade-in {
+    animation: fadeIn 0.6s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .flicker {
+    animation: flicker 3s infinite;
+  }
+
+  @keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.4; }
+    97% { opacity: 1; }
+    98% { opacity: 0.2; }
+    99% { opacity: 0.9; }
+  }
+
+  .text-red { color: var(--accent2); }
+  .text-gold { color: var(--gold); }
+  .text-dim { color: var(--text-dim); }
+  .mt-16 { margin-top: 16px; }
+
+  /* スクロールバー */
+  ::-webkit-scrollbar { width: 2px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- ===== タイトル画面 ===== -->
+  <div id="title-screen">
+    <div class="title-eyebrow">escape from</div>
+    <div class="title-main flicker">東京病院</div>
+    <div class="title-sub">─ 廃墟からの脱出 ─</div>
+    <div class="title-divider"></div>
+
+    <div class="name-section">
+      <div class="name-label">あなたの名前</div>
+      <input class="name-input" id="player-name" type="text" maxlength="10" placeholder="名前を入力してください">
+    </div>
+    <div class="name-section">
+      <div class="name-label">パートナーの名前</div>
+      <input class="name-input" id="partner-name" type="text" maxlength="10" placeholder="名前を入力してください" value="ゆうたい">
+    </div>
+
+    <button class="start-btn" onclick="startGame()">入　院　記　録　を　開　く</button>
+
+    <div class="warning-text">
+      ⚠ このゲームはホラー演出を含みます。<br>
+      心臓の弱い方はご注意ください。
+    </div>
+  </div>
+
+  <!-- ===== ゲーム画面 ===== -->
+  <div id="game-screen">
+    <div class="location-bar">
+      <div class="location-name" id="location-name">─</div>
+      <div class="mistake-counter" id="mistake-display"></div>
+    </div>
+    <div class="scene-area" id="scene-area"></div>
+    <div class="choices" id="choices-area"></div>
+    <div class="code-input-area" id="code-area" style="display:none;">
+      <div class="code-label" id="code-label">コードを入力</div>
+      <div class="code-row">
+        <input class="code-input" id="code-input" type="text" maxlength="6" autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="code-submit" onclick="submitCode()">送　信</button>
+      </div>
+      <div class="hint-box" id="hint-box"></div>
+    </div>
+  </div>
+
+  <!-- ===== ゲームオーバー画面 ===== -->
+  <div id="gameover-screen">
+    <div class="go-title">─ 力 尽 き た ─</div>
+    <div class="go-text" id="go-text"></div>
+    <button class="go-btn" onclick="resetToTitle()">最初からやり直す</button>
+  </div>
+
+  <!-- ===== エンディング画面 ===== -->
+  <div id="ending-screen">
+    <div class="ending-content" id="ending-content"></div>
+  </div>
+
+</div>
+
+<script>
+// ===== 状態管理 =====
+let state = {
+  playerName: '',
+  partnerName: '',
+  currentScene: 'prologue',
+  currentPuzzle: null,
+  mistakes: 0,
+  cluesFound: {},
+  sortSelected: [],
+  sortResult: [],
+};
+
+const MAX_MISTAKES = 5;
+const HINT_THRESHOLD = 3;
+
+function P() { return state.partnerName; }
+function Me() { return state.playerName; }
+
+// ===== シーンデータ =====
+const scenes = {
+
+  prologue: {
+    location: '── 記憶の断片 ──',
+    render() {
+      setScene(`
+目が覚めると、天井が見えた。
+
+剥がれかけたペンキ。錆びた蛍光灯。
+かび臭い空気が、肺に張り付く。
+
+ここが病院だと気づくのに、少し時間がかかった。
+
+東京病院──
+数年前に廃院になった、あの病院だ。
+
+なぜここにいるのか、わからない。
+最後の記憶が、ぼんやりとしている。
+      `.trim(), [
+        { text: '体を起こす', next: 'prologue2' }
+      ]);
+    }
+  },
+
+  prologue2: {
+    location: '── 記憶の断片 ──',
+    render() {
+      setScene(`
+体を起こすと、頭が重い。
+
+白衣を着た青年が、こちらを見ていた。
+穏やかな目。でも、どこか遠い。
+
+「よかった。気がついた」
+      `.trim(), [], () => {
+        addPartnerSpeech(P(), 'よかった。気がついた……。起き上がれる？');
+        setTimeout(() => {
+          setChoices([{ text: '「お前は……誰だ？」', next: 'prologue3' }]);
+        }, 300);
+      });
+    }
+  },
+
+  prologue3: {
+    location: '── 記憶の断片 ──',
+    render() {
+      addText(`
+青年は少し間を置いてから、静かに答えた。
+      `.trim());
+      addPartnerSpeech(P(), `${P()}。……ここで働いていた。\n君のことが、心配で`);
+      setTimeout(() => {
+        addText(`
+名前は聞いたことがあるような、ないような。
+頭痛がして、それ以上考えられない。
+
+とにかく──ここから出なければ。
+      `.trim());
+        setChoices([{ text: '「一緒に、出口を探そう」', next: 'hall_intro' }]);
+      }, 400);
+    }
+  },
+
+  // ===== 謎① 入口ホール =====
+  hall_intro: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      setScene(`
+非常灯だけが赤く灯るホール。
+
+壁には古い案内板。
+床には埃と、誰かが引きずった跡。
+
+ロッカーが並んでいる。鍵がかかっている。
+何か手がかりがあるはずだ。
+      `.trim(), [
+        { text: '点滴スタンドを調べる', next: 'hall_drip' },
+        { text: '壁の対応表を調べる', next: 'hall_wall' },
+        { text: '床を調べる', next: 'hall_floor' },
+        { text: 'ロッカーを開けようとする', next: 'hall_locker' },
+      ]);
+    }
+  },
+
+  hall_drip: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      state.cluesFound.drip = true;
+      setScene(`
+点滴スタンドが3本並んでいる。
+それぞれのタグに、記号が書かれている。
+
+  △のタグ
+  ○のタグ
+  ▲のタグ
+  □のタグ
+
+記号だけでは、意味がわからない。
+何かと対応させる必要がありそうだ。
+      `.trim(), [
+        { text: '← ホールに戻る', next: 'hall_intro' },
+      ]);
+    }
+  },
+
+  hall_wall: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      state.cluesFound.wall = true;
+      setScene(`
+壁に、紙が貼られている。
+ほとんど破れているが、かろうじて読める。
+
+  △ ＝ 4
+  ○ ＝ ？（破れて読めない）
+  ▲ ＝ 7
+  □ ＝ 2
+
+○だけが、わからない。
+      `.trim(), [
+        { text: '← ホールに戻る', next: 'hall_intro' },
+      ]);
+    }
+  },
+
+  hall_floor: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      addPartnerSpeech(P(), '……なんか、落ちてるよ。そこ');
+      setTimeout(() => {
+        state.cluesFound.floor = true;
+        addText(`
+床に、小さなメモが落ちていた。
+
+埃まみれだが、文字が読める。
+
+  ○ ＝ 1
+
+誰かが書き残したものだ。
+        `.trim());
+        setChoices([{ text: '← ホールに戻る', next: 'hall_intro' }]);
+      }, 400);
+    }
+  },
+
+  hall_locker: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      const hasAll = state.cluesFound.drip && state.cluesFound.wall && state.cluesFound.floor;
+      if (!hasAll) {
+        setScene(`
+ロッカーには4桁の鍵がついている。
+
+まだ手がかりが足りない。
+ホール内をもっと調べてみよう。
+        `.trim(), [{ text: '← ホールに戻る', next: 'hall_intro' }]);
+      } else {
+        setScene(`
+ロッカーには4桁の鍵がついている。
+
+手がかりが揃った。
+
+  △ ＝ 4
+  ○ ＝ 1
+  ▲ ＝ 7
+  □ ＝ 2
+
+点滴タグの順番（△○▲□）に並べると……
+        `.trim(), []);
+        showCodeInput('ロッカーのコードを入力（4桁）', 'puzzle1');
+      }
+    }
+  },
+
+  hall_clear: {
+    location: '東京病院 ─ 入口ホール',
+    render() {
+      setScene(`
+ロッカーが開いた。
+
+中には、古びた院内マップが入っていた。
+
+エリアが番号で分けられている。
+  ①待合室  ②処置室  ③手術室  ④医局  ⑤屋上
+
+マップを持って、奥へ進む。
+      `.trim(), [
+        { text: '待合室へ向かう', next: 'waiting_intro' }
+      ]);
+    }
+  },
+
+  // ===== 謎② 待合室 =====
+  waiting_intro: {
+    location: '東京病院 ─ 待合室',
+    render() {
+      setScene(`
+長椅子に、雑誌が5冊散らばっている。
+
+風もないのに、ページがゆっくりめくれた。
+
+表紙の発行号数だけが、赤いマーカーで囲まれている。
+奥の扉には、4桁の鍵。
+      `.trim(), [
+        { text: '雑誌を調べる', next: 'waiting_magazines' },
+        { text: '院内マップを確認する', next: 'waiting_map' },
+        { text: '奥の扉を調べる', next: 'waiting_door' },
+      ]);
+    }
+  },
+
+  waiting_magazines: {
+    location: '東京病院 ─ 待合室',
+    render() {
+      setScene(`
+雑誌を1冊ずつ確認する。
+表紙の号数が赤いマーカーで囲まれている。
+
+タップして調べてみよう。
+      `.trim(), []);
+
+      const magazines = [
+        { id: 'mag_a', label: '古い医療雑誌（A）', content: '表紙に大きく「No.3」と書かれている。' },
+        { id: 'mag_b', label: '古い医療雑誌（B）', content: '表紙に大きく「No.5」と書かれている。' },
+        { id: 'mag_c', label: '古い医療雑誌（C）', content: '表紙に大きく「No.1」と書かれている。' },
+        { id: 'mag_d', label: '古い医療雑誌（D）', content: '表紙に大きく「No.7」と書かれている。' },
+        { id: 'mag_e', label: '古い医療雑誌（E）', content: '表紙に大きく「No.2」と書かれている。' },
+      ];
+
+      const scene = document.getElementById('scene-area');
+      const box = document.createElement('div');
+      box.className = 'puzzle-box';
+      box.innerHTML = '<div class="puzzle-title">── 雑誌コーナー ──</div>';
+      magazines.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'clue-item';
+        item.id = m.id;
+        if (state.cluesFound[m.id]) {
+          item.classList.add('revealed');
+          item.innerHTML = `<strong>${m.label}</strong><br>${m.content}`;
+        } else {
+          item.innerHTML = `${m.label}<div class="tap-hint">タップして調べる</div>`;
+          item.onclick = () => {
+            state.cluesFound[m.id] = true;
+            item.classList.add('revealed');
+            item.innerHTML = `<strong>${m.label}</strong><br>${m.content}`;
+          };
+        }
+        box.appendChild(item);
+      });
+      scene.appendChild(box);
+      setChoices([
+        { text: '待合室に戻る', next: 'waiting_intro' },
+      ]);
+    }
+  },
+
+  waiting_map: {
+    location: '東京病院 ─ 待合室',
+    render() {
+      state.cluesFound.map = true;
+      setScene(`
+院内マップを確認する。
+
+エリア番号と場所の対応：
+
+  ① 待合室
+  ② 処置室
+  ③ 手術室
+  ④ 医局
+  ⑤ 屋上
+
+各エリアに番号が振られている。
+雑誌の号数と、何か関係があるかもしれない。
+      `.trim(), [{ text: '← 待合室に戻る', next: 'waiting_intro' }]);
+    }
+  },
+
+  waiting_door: {
+    location: '東京病院 ─ 待合室',
+    render() {
+      const hasAll = state.cluesFound.mag_a && state.cluesFound.mag_c && state.cluesFound.mag_d && state.cluesFound.mag_e && state.cluesFound.map;
+      if (!hasAll) {
+        setScene(`
+奥の扉には4桁の鍵がついている。
+
+マップの番号と、雑誌の号数を照らし合わせてみよう。
+        `.trim(), [{ text: '← 待合室に戻る', next: 'waiting_intro' }]);
+      } else {
+        setScene(`
+奥の扉には4桁の鍵がついている。
+
+マップのエリア順（①②③④）に対応する雑誌を並べると……
+
+  ① 待合室 → No.3
+  ② 処置室 → No.1
+  ③ 手術室 → No.7
+  ④ 医局   → No.2
+
+No.5はダミーだったようだ。
+        `.trim(), []);
+        showCodeInput('扉のコードを入力（4桁）', 'puzzle2');
+      }
+    }
+  },
+
+  waiting_clear: {
+    location: '東京病院 ─ 待合室',
+    render() {
+      addPartnerSpeech(P(), '……開いた。先に進もう');
+      setTimeout(() => {
+        addText('扉が軋む音をたてて開いた。\n廊下の奥から、冷たい空気が流れてくる。');
+        setChoices([{ text: '手術室へ向かう', next: 'surgery_intro' }]);
+      }, 400);
+    }
+  },
+
+  // ===== 謎③ 手術室 =====
+  surgery_intro: {
+    location: '東京病院 ─ 手術室',
+    render() {
+      setScene(`
+手術室。
+
+天井のライトが、不規則に点滅している。
+手術台の脇に、点滴スタンドが4本立っている。
+
+輸血パックがぶら下がっていた。
+黒ずんだ血液が残っている。
+
+奥の金庫に4桁の鍵。
+      `.trim(), [
+        { text: '輸血パックを調べる', next: 'surgery_packs' },
+        { text: '金庫を調べる', next: 'surgery_safe' },
+      ]);
+    }
+  },
+
+  surgery_packs: {
+    location: '東京病院 ─ 手術室',
+    render() {
+      setScene(`
+点滴スタンドを1本ずつ確認する。
+
+ラベルには血液型ではなく、手書きの数字が書き殴られていた。
+テープで順番が貼られている。
+
+タップして確認しよう。
+      `.trim(), []);
+
+      const packs = [
+        { id: 'pack1', label: '①番のパック', content: '黒ずんだ血液。ラベルに「2」と書かれている。' },
+        { id: 'pack2', label: '②番のパック', content: '黒ずんだ血液。ラベルに「5」と書かれている。' },
+        { id: 'pack3', label: '③番のパック', content: '黒ずんだ血液。ラベルに「6」と書かれている。' },
+        { id: 'pack4', label: '④番のパック', content: '黒ずんだ血液。ラベルに「8」と書かれている。' },
+      ];
+
+      const scene = document.getElementById('scene-area');
+      const box = document.createElement('div');
+      box.className = 'puzzle-box';
+      box.innerHTML = '<div class="puzzle-title">── 輸血パック ──</div>';
+      packs.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'clue-item';
+        item.id = p.id;
+        if (state.cluesFound[p.id]) {
+          item.classList.add('revealed');
+          item.innerHTML = `<strong>${p.label}</strong><br>${p.content}`;
+        } else {
+          item.innerHTML = `${p.label}<div class="tap-hint">タップして調べる</div>`;
+          item.onclick = () => {
+            state.cluesFound[p.id] = true;
+            item.classList.add('revealed');
+            item.innerHTML = `<strong>${p.label}</strong><br>${p.content}`;
+          };
+        }
+        box.appendChild(item);
+      });
+      scene.appendChild(box);
+
+      setChoices([{ text: '← 手術室に戻る', next: 'surgery_intro' }]);
+    }
+  },
+
+  surgery_safe: {
+    location: '東京病院 ─ 手術室',
+    render() {
+      const hasAll = state.cluesFound.pack1 && state.cluesFound.pack2 && state.cluesFound.pack3 && state.cluesFound.pack4;
+      if (!hasAll) {
+        setScene(`
+金庫には4桁の鍵がついている。
+
+輸血パックの番号順に数字を並べてみよう。
+        `.trim(), [{ text: '← 手術室に戻る', next: 'surgery_intro' }]);
+      } else {
+        setScene(`
+金庫には4桁の鍵がついている。
+
+輸血パックのテープ番号順に読むと……
+
+  ① → 2
+  ② → 5
+  ③ → 6
+  ④ → 8
+        `.trim(), []);
+
+        addPartnerSpeech(P(), '……この血液型、全部同じ患者のものだ');
+        setTimeout(() => {
+          showCodeInput('金庫のコードを入力（4桁）', 'puzzle3');
+        }, 500);
+      }
+    }
+  },
+
+  surgery_clear: {
+    location: '東京病院 ─ 手術室',
+    render() {
+      setScene(`
+金庫が開いた。
+
+中には、院内の古いIDカードが入っていた。
+医局への扉を開けることができるようだ。
+      `.trim(), [{ text: '医局へ向かう', next: 'office_intro' }]);
+    }
+  },
+
+  // ===== 謎④ 医局 =====
+  office_intro: {
+    location: '東京病院 ─ 医局',
+    render() {
+      setScene(`
+医局。
+
+カルテが床に散乱している。
+机の上には薬品の空瓶。
+窓は釘で打ち付けられている。
+
+1冊だけ、異様なカルテがあった。
+      `.trim(), [
+        { text: '異様なカルテを調べる', next: 'office_karte' },
+        { text: '奥の扉を調べる', next: 'office_door' },
+      ]);
+    }
+  },
+
+  office_karte: {
+    location: '東京病院 ─ 医局',
+    render() {
+      setScene(`
+血で塗り固められたカルテ。
+
+乾いた血の下に、かすかに文字が透けて見える。
+
+よく目を凝らすと──3つの文字と、番号が見えた。
+
+タップして文字を確認し、正しい順番に並べよう。
+      `.trim(), []);
+
+      renderSortUI();
+      setChoices([{ text: '← 医局に戻る', next: 'office_intro' }]);
+    }
+  },
+
+  office_door: {
+    location: '東京病院 ─ 医局',
+    render() {
+      setScene(`
+奥の扉には南京錠がついている。
+
+ひらがなで答えを入力するタイプのようだ。
+カルテに隠された言葉が鍵になるはずだ。
+      `.trim(), []);
+      showCodeInput('カルテの言葉を入力', 'puzzle4');
+    }
+  },
+
+  office_clear: {
+    location: '東京病院 ─ 医局',
+    render() {
+      addPartnerSpeech(P(), '……きおく、か。俺も……忘れたくなかったんだ。あの日のことを');
+      setTimeout(() => {
+        addText('主人公には意味がわからなかった。\nでも、なぜか胸が痛んだ。');
+        setChoices([{ text: '屋上へ向かう', next: 'roof_intro' }]);
+      }, 600);
+    }
+  },
+
+  // ===== 謎⑤ 屋上 =====
+  roof_intro: {
+    location: '東京病院 ─ 屋上',
+    render() {
+      setScene(`
+屋上に出た。
+
+雨上がりの夜空が広がっている。
+東京の灯りが、遠くに見える。
+
+錆びた手すりに、封筒が一枚挟まれていた。
+      `.trim(), [
+        { text: '封筒を手に取る', next: 'roof_letter' },
+      ]);
+    }
+  },
+
+  roof_letter: {
+    location: '東京病院 ─ 屋上',
+    render() {
+      addPartnerSpeech(P(), '……開けて');
+      setTimeout(() => {
+        addText('静かな声だった。\n促されるように、封を切る。');
+        setScene(`
+手紙の本文が、震える字で書かれていた。
+
+  き　みが目を覚ますことを、ずっと祈っていた。
+  お　れにできることは、もう多くはなかったけれど。
+  く　らい廊下を、一緒に歩いてくれてありがとう。
+  る　しくて、でも……後悔はしていない。
+  し　ばらくそばにいさせてほしかった。
+
+手紙の末尾に、日付が記されていた。
+        `.trim(), [
+          { text: '日付を確認する', next: 'roof_date' }
+        ]);
+      }, 500);
+    }
+  },
+
+  roof_date: {
+    location: '東京病院 ─ 屋上',
+    render() {
+      state.cluesFound.letter = true;
+      setScene(`
+手紙の末尾：
+
+  ─── 03月09日
+
+この日付が、脱出扉のコードになるはずだ。
+4桁で入力しよう。
+      `.trim(), []);
+      showCodeInput('脱出扉のコード（4桁、ゼロを含む）', 'puzzle5');
+    }
+  },
+};
+
+// ===== 並び替えUI（謎④）=====
+function renderSortUI() {
+  const scene = document.getElementById('scene-area');
+
+  const chars = [
+    { id: 'c1', num: '①', char: 'く' },
+    { id: 'c2', num: '②', char: 'お' },
+    { id: 'c3', num: '③', char: 'き' },
+  ];
+
+  const sortBox = document.createElement('div');
+  sortBox.className = 'puzzle-box sort-area';
+  sortBox.innerHTML = `
+    <div class="puzzle-title">── 血の下の文字 ──</div>
+    <div class="sort-label">文字をタップして並べ替えよう</div>
+    <div class="sort-chars" id="sort-chars">
+      ${chars.map(c => `
+        <div class="sort-char" id="${c.id}" onclick="selectSortChar('${c.id}', '${c.char}')">
+          <span class="char-num">${c.num}</span>${c.char}
+        </div>
+      `).join('')}
+    </div>
+    <div class="sort-label">カルテの端に書かれた言葉：「さかのぼれ」</div>
+    <div class="sort-label">並べた結果</div>
+    <div class="sort-result" id="sort-result"></div>
+    <button class="sort-clear" onclick="clearSort()">やり直す</button>
+  `;
+  scene.appendChild(sortBox);
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:12px;color:var(--text-dim);margin-top:12px;line-height:1.8;padding:0 4px;';
+  hint.textContent = '番号の逆順から読むと、意味のある言葉になるかもしれない。';
+  scene.appendChild(hint);
+}
+
+function selectSortChar(id, char) {
+  if (state.sortResult.length >= 3) return;
+  if (state.sortSelected.includes(id)) return;
+
+  state.sortSelected.push(id);
+  state.sortResult.push(char);
+
+  document.getElementById(id).classList.add('selected');
+
+  const result = document.getElementById('sort-result');
+  const slot = document.createElement('div');
+  slot.className = 'sort-slot';
+  slot.textContent = char;
+  result.appendChild(slot);
+
+  if (state.sortResult.length === 3) {
+    const word = state.sortResult.join('');
+    setTimeout(() => {
+      const info = document.createElement('div');
+      info.style.cssText = 'margin-top:12px;font-size:13px;color:var(--text);padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:2px;';
+      info.textContent = `並べた結果：「${word}」`;
+      document.getElementById('sort-result').after(info);
+
+      showCodeInput('カルテの言葉を入力', 'puzzle4');
+    }, 300);
+  }
+}
+
+function clearSort() {
+  state.sortSelected = [];
+  state.sortResult = [];
+  document.querySelectorAll('.sort-char').forEach(el => el.classList.remove('selected'));
+  const result = document.getElementById('sort-result');
+  if (result) result.innerHTML = '';
+  const codeArea = document.getElementById('code-area');
+  if (codeArea) codeArea.style.display = 'none';
+}
+
+// ===== パズル設定 =====
+const puzzles = {
+  puzzle1: {
+    answer: '4172',
+    hint3: `${P()}「……床を、よく見て。誰かがメモを落としている」`,
+    hint5: `${P()}「……ごめん、俺の力じゃここまでしか」`,
+    nextScene: 'hall_clear',
+  },
+  puzzle2: {
+    answer: '3172',
+    hint3: `${P()}「マップを見て。病院にはエリアの順番がある……番号と雑誌を結びつけてみて」`,
+    hint5: `${P()}「……ごめん、俺の力じゃここまでしか」`,
+    nextScene: 'waiting_clear',
+  },
+  puzzle3: {
+    answer: '2568',
+    hint3: `${P()}「……テープの番号順に、パックの数字を読んで」`,
+    hint5: `${P()}「……ごめん、俺の力じゃここまでしか」`,
+    nextScene: 'surgery_clear',
+  },
+  puzzle4: {
+    answer: 'きおく',
+    hint3: `${P()}「……番号の逆から読んでみて。③→②→①の順に」`,
+    hint5: `${P()}「……ごめん、俺の力じゃここまでしか」`,
+    nextScene: 'office_clear',
+  },
+  puzzle5: {
+    answer: '0309',
+    hint3: `${P()}「……手紙の日付を4桁で。3月9日なら……」`,
+    hint5: `${P()}「……ごめん、俺の力じゃここまでしか」`,
+    nextScene: 'ending',
+  },
+};
+
+// ===== ゲームロジック =====
+function startGame() {
+  const pn = document.getElementById('player-name').value.trim();
+  const pa = document.getElementById('partner-name').value.trim();
+  if (!pn) { alert('名前を入力してください'); return; }
+  if (!pa) { alert('パートナーの名前を入力してください'); return; }
+
+  state.playerName = pn;
+  state.partnerName = pa;
+
+  // パズルのヒント文にパートナー名を反映
+  Object.keys(puzzles).forEach(k => {
+    puzzles[k].hint3 = puzzles[k].hint3.replace(/PARTNER/g, pa);
+    puzzles[k].hint5 = puzzles[k].hint5.replace(/PARTNER/g, pa);
+  });
+
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('game-screen').style.flexDirection = 'column';
+
+  goToScene('prologue');
+}
+
+function goToScene(sceneId) {
+  state.currentScene = sceneId;
+  state.currentPuzzle = null;
+  state.mistakes = 0;
+  updateMistakeDisplay();
+
+  clearCodeInput();
+
+  const sceneArea = document.getElementById('scene-area');
+  sceneArea.innerHTML = '';
+  document.getElementById('choices-area').innerHTML = '';
+
+  if (scenes[sceneId]) {
+    document.getElementById('location-name').textContent = scenes[sceneId].location;
+    scenes[sceneId].render();
+  }
+  sceneArea.scrollTop = 0;
+}
+
+function setScene(text, choices, callback) {
+  const sceneArea = document.getElementById('scene-area');
+  sceneArea.innerHTML = '';
+
+  const textEl = document.createElement('div');
+  textEl.className = 'scene-text fade-in';
+  textEl.textContent = text;
+  sceneArea.appendChild(textEl);
+
+  if (callback) {
+    setTimeout(callback, 100);
+  } else {
+    setChoices(choices);
+  }
+}
+
+function addText(text) {
+  const sceneArea = document.getElementById('scene-area');
+  const el = document.createElement('div');
+  el.className = 'scene-text fade-in mt-16';
+  el.textContent = text;
+  sceneArea.appendChild(el);
+}
+
+function addPartnerSpeech(name, text) {
+  const sceneArea = document.getElementById('scene-area');
+  const el = document.createElement('div');
+  el.className = 'partner-speech fade-in';
+  el.innerHTML = `<div class="partner-name">${name}</div><div class="partner-text">${text}</div>`;
+  sceneArea.appendChild(el);
+}
+
+function setChoices(choices) {
+  const area = document.getElementById('choices-area');
+  area.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.text;
+    btn.onclick = () => goToScene(c.next);
+    area.appendChild(btn);
+  });
+}
+
+function showCodeInput(label, puzzleId) {
+  state.currentPuzzle = puzzleId;
+  const area = document.getElementById('code-area');
+  area.style.display = 'block';
+  document.getElementById('code-label').textContent = label;
+  document.getElementById('code-input').value = '';
+  document.getElementById('hint-box').className = 'hint-box';
+  document.getElementById('hint-box').textContent = '';
+  updateMistakeDisplay();
+}
+
+function clearCodeInput() {
+  const area = document.getElementById('code-area');
+  area.style.display = 'none';
+  document.getElementById('code-input').value = '';
+}
+
+function updateMistakeDisplay() {
+  const el = document.getElementById('mistake-display');
+  if (state.mistakes === 0) {
+    el.textContent = '';
+  } else {
+    el.textContent = `誤入力 ${state.mistakes} / ${MAX_MISTAKES}`;
+  }
+}
+
+function submitCode() {
+  if (!state.currentPuzzle) return;
+  const input = document.getElementById('code-input').value.trim();
+  const puzzle = puzzles[state.currentPuzzle];
+
+  if (input === puzzle.answer) {
+    clearCodeInput();
+    state.mistakes = 0;
+    updateMistakeDisplay();
+    document.getElementById('choices-area').innerHTML = '';
+    goToScene(puzzle.nextScene);
+  } else {
+    state.mistakes++;
+    updateMistakeDisplay();
+
+    if (state.mistakes >= MAX_MISTAKES) {
+      showGameOver(puzzle.hint5);
+      return;
+    }
+
+    if (state.mistakes >= HINT_THRESHOLD) {
+      const hintBox = document.getElementById('hint-box');
+      hintBox.className = 'hint-box visible';
+      hintBox.textContent = puzzle.hint3;
+    }
+
+    document.getElementById('code-input').value = '';
+    document.getElementById('code-input').style.borderColor = 'var(--accent2)';
+    setTimeout(() => {
+      document.getElementById('code-input').style.borderColor = '';
+    }, 600);
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && state.currentPuzzle) submitCode();
+});
+
+function showGameOver(lastWords) {
+  const puzzle = puzzles[state.currentPuzzle];
+  document.getElementById('game-screen').style.display = 'none';
+  const go = document.getElementById('gameover-screen');
+  go.style.display = 'flex';
+  go.style.flexDirection = 'column';
+  document.getElementById('go-text').textContent =
+    `${state.partnerName}の声が、遠くなっていく。\n\n「……ごめん、俺の力じゃここまでしか」\n\n暗闇が、${state.playerName}を包んだ。`;
+}
+
+function resetToTitle() {
+  state = {
+    playerName: state.playerName,
+    partnerName: state.partnerName,
+    currentScene: 'prologue',
+    currentPuzzle: null,
+    mistakes: 0,
+    cluesFound: {},
+    sortSelected: [],
+    sortResult: [],
+  };
+  document.getElementById('gameover-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('game-screen').style.flexDirection = 'column';
+  goToScene('prologue');
+}
+
+// ===== エンディング =====
+function showEnding() {
+  document.getElementById('game-screen').style.display = 'none';
+  const endScreen = document.getElementById('ending-screen');
+  endScreen.style.display = 'flex';
+  endScreen.style.flexDirection = 'column';
+
+  const content = document.getElementById('ending-content');
+  const p = state.partnerName;
+  const m = state.playerName;
+
+  content.innerHTML = `
+    <div class="ending-text fade-in">扉が、開いた。
+
+冷たい夜風が頬をなでる。
+
+${m}は振り返った。</div>
+
+    <div class="ending-text fade-in">${p}の姿が──
+薄くなっていた。</div>
+
+    <div class="ending-speech fade-in">
+      <div class="partner-name">${p}</div>
+      <div class="partner-text">……${m}、よかった。出られる</div>
+    </div>
+
+    <div class="ending-text fade-in">「なんで……なんでお前がここにいたんだ」</div>
+
+    <div class="ending-speech fade-in">
+      <div class="partner-name">${p}</div>
+      <div class="partner-text">俺は……ずっと、ここにいたよ。あの日から</div>
+    </div>
+
+    <div class="ending-text fade-in">その声は、どんどん遠くなっていく。
+
+${m}の足元に、何かが落ちた。
+
+古びた、診察記録だった。</div>
+
+    <div class="ending-record fade-in">
+      <div>東京病院　患者記録</div>
+      <div>───────────────</div>
+      <div>患者名：${m}</div>
+      <div>入院期間：20XX年 03月09日 〜</div>
+      <div>担当医：${p}</div>
+      <div style="margin-top:12px;" class="red">担当医 逝去　享年28歳</div>
+      <div class="red">20XX年 03月09日</div>
+    </div>
+
+    <div class="ending-text fade-in">同じ日付だった。
+
+${m}が入院したその日に──
+${p}は、逝っていた。</div>
+
+    <div class="ending-speech fade-in">
+      <div class="partner-name" style="color:var(--text-dim);">${p}の声</div>
+      <div class="partner-text" style="color:var(--text-dim);">ありがとう、${m}。
+一緒に……歩けてよかった</div>
+    </div>
+
+    <div class="ending-text fade-in">光の中に、${p}は消えた。
+
+${m}は──泣いていた。
+
+誰もいない屋上で、ただ泣いていた。</div>
+
+    <div class="ending-final">
+      <div class="ending-final-text">きおく、という言葉が頭をよぎった。
+
+あの手紙の言葉が。
+
+君が目を覚ますことを、
+ずっと祈っていた。</div>
+
+      <div class="ending-title-card">── E N D ──</div>
+
+      <button class="replay-btn" onclick="resetFromEnding()">もう一度プレイする</button>
+    </div>
+  `;
+}
+
+function resetFromEnding() {
+  state = {
+    playerName: state.playerName,
+    partnerName: state.partnerName,
+    currentScene: 'prologue',
+    currentPuzzle: null,
+    mistakes: 0,
+    cluesFound: {},
+    sortSelected: [],
+    sortResult: [],
+  };
+  document.getElementById('ending-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('game-screen').style.flexDirection = 'column';
+  goToScene('prologue');
+}
+
+// エンディングシーン用
+scenes['ending'] = {
+  location: '── epilogue ──',
+  render() {
+    showEnding();
+  }
+};
+</script>
+</body>
+</html>
